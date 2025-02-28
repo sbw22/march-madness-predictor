@@ -1,6 +1,5 @@
 if __name__ == "__main__":     
-    from bs4 import BeautifulSoup
-    import requests
+
     from selenium import webdriver
     from selenium.webdriver.chrome.service import Service
     from selenium.webdriver.chrome.options import Options
@@ -32,7 +31,7 @@ if __name__ == "__main__":
 
         tourney_dict = dict()
 
-        for i in range(year_len):
+        for i in range(1):
             tourney_dict[year_str] = dict()
 
             
@@ -57,12 +56,38 @@ if __name__ == "__main__":
 
             print("******************************************************************")
 
-            overall_div = soup.find('div', id='east')
+            overall_div = soup.find('div', id='brackets')
+            east = overall_div.find('div', id='east')
+
+
             #current_tab = overall_div.find('div', class_='current')
-            #east_b = current_tab.find('div', class_="team16")
+            rounds = east.find('div', class_="round")
+            games = rounds.find('div')
+            for game in east:
+                print(f"game(?)")
+                print(game.text)
+            '''
+            print(f"east: ")
+            print(east.text)
+            print(f"round(s): ")
+            print(games.text)
+            print(f"game(s)")
+            print(games.text)
+            #print(games.text)
+            '''
+
+            '''
+            for game in games:
+                print('######################################################################')
+                print(game.text)
+                print("in")
+                print('######################################################################')
             # games = east_b.find('div')
 
-            print(overall_div)
+
+            '''
+
+            # print(overall_div)
 
             '''
             for game in games:
@@ -94,9 +119,7 @@ if __name__ == "__main__":
 
             return
 
-            start += 1
 
-            driver.quit()
 
         return tourney_dict
     
