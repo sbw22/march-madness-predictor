@@ -1,12 +1,6 @@
 if __name__ == "__main__":     
 
-    from selenium import webdriver
-    from selenium.webdriver.chrome.service import Service
-    from selenium.webdriver.chrome.options import Options
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
-    from selenium.webdriver.common.keys import Keys
+  
     import time
     import csv
     import json
@@ -23,103 +17,41 @@ if __name__ == "__main__":
     def get_tourney_info():
 
 
-        start_year = 2003
-        year = start_year
-        year_str = f"{year}"
-        end_year = 2024
-        year_len = end_year - start_year
+        start_year = 2004  # First tournament year we are checking 
+        year = start_year   # year variable that increments through the for loop
+        end_year = 2024      # Last tournament year we are checking
+        year_len = end_year - start_year   # length of time we are checking
 
-        tourney_dict = dict()
+        tourney_dict = dict() # dictionary that holds all the data from the ncaa tourney
 
-        for i in range(1):
-            tourney_dict[year_str] = dict()
+        for i in range(4, 24):  # for loop that looks through the ncaa tourneys
 
-            
-            website = f'https://www.sports-reference.com/cbb/postseason/men/{year}-ncaa.html'
+            if year == 2020:  # Skips 2020 year, becuase it was canceled because of covid
+                year += 1
+                continue 
 
-            '''
-            path = "/usr/local/bin/chromedriver"
-            service = Service(executable_path=path)
-            driver = webdriver.Chrome(service=service)
-            driver.get(website)
+            year_str = f"{year}"    # string version of the year variable
 
+            file_path = f'data/chat_tourney_results/{year_str}_March_Madness_Full_Results_With_Final4.csv'  # file path to the tourney results tables csv
 
-            east_b = driver.find_element(By.CLASS_NAME, 'team16')
-            round = east_b.find_element(By.CLASS_NAME, 'round')
-            games = round.find_elements(By.TAG_NAME, 'div')
-
-            '''
-            headers = {"User-Agent": "Mozilla/5.0"}
-            response = requests.get(website, headers=headers)
-
-            soup = BeautifulSoup(response.text, "html.parser")
-
-            print("******************************************************************")
-
-            overall_div = soup.find('div', id='brackets')
-            east = overall_div.find('div', id='east')
+            tourney_dict[year_str] = dict() # creates a new key and value pair in the ncaa tourney results dictionary
 
 
-            #current_tab = overall_div.find('div', class_='current')
-            rounds = east.find('div', class_="round")
-            games = rounds.find('div')
-            for game in east:
-                print(f"game(?)")
-                print(game.text)
-            '''
-            print(f"east: ")
-            print(east.text)
-            print(f"round(s): ")
-            print(games.text)
-            print(f"game(s)")
-            print(games.text)
-            #print(games.text)
-            '''
+            with open(file_path, 'r') as tourney_stats:   # Opens csv file
+                tourney_data = csv.reader(tourney_stats, delimiter=',')    # assigns csv to a variable
+                next(tourney_data) # Skips the header
+                for row in tourney_data:   # iterates through every row in the ncaa tourney table for that year
+                    game = row
+                    print(f"{year_str} row = {game}, data type = {type(game)}")  # prints every row in the table
 
-            '''
-            for game in games:
-                print('######################################################################')
-                print(game.text)
-                print("in")
-                print('######################################################################')
-            # games = east_b.find('div')
+                    rounds = 0
+                    for round in range(rounds):
+                        print("in loop")
+                        # This loop will go through the teams and assign them to the master list, along with how many wins they had in the tourney, scores, opponents, etc.
+                        # This is where we will enter the info into the dictionary like the one in the image on discord, unless there is a better way to do it. 
 
 
-            '''
-
-            # print(overall_div)
-
-            '''
-            for game in games:
-                print('######################################################################')
-                # print(game)
-                teams = game.find('div')
-                # if teams[0].get('class') == "winner":
-                _type = type(teams)
-                print(f"teams type = {_type}")
-                if _type == type(1):
-                    print(f"teams text = {teams}")
-                else:
-                    print(f"teams text = {teams.text}")
-
-            '''
-            # print(east_b)
-
-
-            '''
-            for game in games:
-                for team in teams:
-                    print(team.text)
-
-                print(f"end of game")
-
-            '''
-
-            # print(east_b.text)
-
-            return
-
-
+            year += 1
 
         return tourney_dict
     
