@@ -17,14 +17,18 @@ if __name__ == "__main__":
     def get_tourney_info():
 
 
-        start_year = 2004  # First tournament year we are checking 
+        start_year = 2007  # First tournament year we are checking 
         year = start_year   # year variable that increments through the for loop
         end_year = 2023      # Last tournament year we are checking
         year_len = end_year - start_year   # length of time we are checking
 
         tourney_dict = dict() # dictionary that holds all the data from the ncaa tourney
 
-        for i in range(4, 5):  # for loop that looks through the ncaa tourneys
+        # year_dict[f"{team}"] = dict()
+        
+
+
+        for i in range(year_len):  # for loop that looks through the ncaa tourneys
 
             if year == 2020:  # Skips 2020 year, becuase it was canceled because of covid
                 year += 1
@@ -33,40 +37,89 @@ if __name__ == "__main__":
             year_str = f"{year}"    # string version of the year variable
 
             file_path = f'data/chat_tourney_results/{year_str}_March_Madness_Full_Results_With_Final4.csv'  # file path to the tourney results tables csv
-
+            
             tourney_dict[year_str] = dict() # creates a new key and value pair in the ncaa tourney results dictionary
+
+
 
             year_dict = tourney_dict[year_str]
 
+
+
+
             with open(file_path, 'r') as tourney_stats:   # Opens csv file
+
+
                 tourney_data = csv.reader(tourney_stats, delimiter=',')    # assigns csv to a variable
                 next(tourney_data) # Skips the header
-                for game in tourney_data:   # iterates through every row in the ncaa tourney table for that year
+
+                for game in tourney_data:   # iterates through every row in the ncaa tourney table for that year to find teams 
 
                     # print(f"{year_str} row = {game}, data type = {type(game)}")  # prints every row in the table
 
                     game_string = game[2]   # assigns game_string variable to the string describing the two teams ()
-
-
                     game_list = game_string.split(" ")  # Converts the game_string to a list
 
                     round = game[1]  # round the current game is in
 
-                    team_seed = game_list[0][1]   # seed of team 
-                    team = game_list[1]   # team name
-                    opp_seed = game_list[3][1]    # seed of opponent
-                    opp_team = " ".join(game_list[4:])    # oppenents team name
+                    vs_index = game_list.index("vs.")
+
+                    team1_seed = game_list[0][1]   # seed of team 
+                    team1 = " ".join(game_list[1:vs_index])   # team name
+                    team2_seed = game_list[vs_index+1][1]    # seed of opponent
+                    team2 = " ".join(game_list[vs_index+2:])    # oppenents team name
                     score = game[3] # score of the game
+                    
+                    try:
+                        subt = len(score)-3
+                        score1 = int(score[0:subt])
+                        score2 = int(score[subt+1:])
+                    except:
+                        subt = len(score)-4
+                        score1 = int(score[0:subt])
+                        score2 = int(score[subt+1:])
 
-                    game_stats = [team, opp_team, score] # list that (for now, might add seeds and win variables) holds teams and score of the game
 
-                    year_dict[f"{team}"] = dict()
 
-                    team_dict = year_dict
+                    team1_result = True if score1 > score2 else False  # win or loss stat for teams
+                    team2_result = False if score1 > score2 else True
+
+
+                    teams = [team1, team2]
+
+                    team1_stats = [team1_result, team1, team2, score] # list that (for now, might add seeds and win variables) holds teams and score of the game
+                    team2_stats = [team2_result, team1, team2, score]
+
+                    
+
+                    if round == "First Round": 
+                        year_dict[team1] = dict()
+                        year_dict[team2] = dict()
+
+                    team1_dict = year_dict[team1]
+                    team2_dict = year_dict[team2]
+
+                    team1_dict[f"{round}"] = team1_stats
+                    team2_dict[f"{round}"] = team2_stats
+                    
+
+                    # year_dict[f"{team1}"][f"{round}"] = game_stats
+
+                    
+
+                    '''
 
                     team_dict[f"{round}"] = []
+
                     round_list = team_dict[f"{round}"]
+
                     round_list.extend(game_stats)
+
+                    print(f"team_dict length  = {len(team_dict)}")
+
+                    '''
+
+                    # print(round_list)
 
 
 
@@ -90,7 +143,14 @@ if __name__ == "__main__":
         
         tourney_dict = get_tourney_info()
 
-        print(tourney_dict)
+        for year in tourney_dict:
+            print(f"year: {year}")
+            year_dict = tourney_dict[f"{year}"]
+            for team in year_dict:
+                print(f"team: {team}")
+                print(year_dict[f"{team}"])
+
+        # print(f"tourney_dict = {tourney_dict}")
 
 
 
