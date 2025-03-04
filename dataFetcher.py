@@ -95,7 +95,7 @@ if __name__ == "__main__":
                         year_dict[team1] = dict()
                         year_dict[team2] = dict()
 
-                    print(f"year = {year}")
+                    # print(f"year = {year}")
 
                     team1_dict = year_dict[team1] # Assigns the team dictionary to team1_dict variable
                     team2_dict = year_dict[team2]
