@@ -9,17 +9,12 @@ if __name__ == "__main__":
     import cbbpy.mens_scraper as s
 
 
-
-    
-
-
-
     def get_tourney_info():
 
 
-        start_year = 2007  # First tournament year we are checking 
+        start_year = 2004  # First tournament year we are checking 
         year = start_year   # year variable that increments through the for loop
-        end_year = 2023      # Last tournament year we are checking
+        end_year = 2024      # First tournament year we are not checking
         year_len = end_year - start_year   # length of time we are checking
 
         tourney_dict = dict() # dictionary that holds all the data from the ncaa tourney
@@ -30,13 +25,13 @@ if __name__ == "__main__":
 
         for i in range(year_len):  # for loop that looks through the ncaa tourneys
 
-            if year == 2020:  # Skips 2020 year, becuase it was canceled because of covid
+            if year == 2020 or year == 2021 or year == 2005:  # Skips 2020 year, becuase it was canceled because of covid. Skips 2021 year (for now) because a game was not played. Idk why 2005 is messed up (something with UNC).
                 year += 1
                 continue 
 
             year_str = f"{year}"    # string version of the year variable
 
-            file_path = f'data/chat_tourney_results/{year_str}_March_Madness_Full_Results_With_Final4.csv'  # file path to the tourney results tables csv
+            file_path = f'data/revised_tourney_results/corrected_{year_str}_tourney.csv'  # file path to the tourney results tables csv
             
             tourney_dict[year_str] = dict() # creates a new key and value pair in the ncaa tourney results dictionary
 
@@ -51,7 +46,8 @@ if __name__ == "__main__":
 
 
                 tourney_data = csv.reader(tourney_stats, delimiter=',')    # assigns csv to a variable
-                next(tourney_data) # Skips the header
+                next(tourney_data) # Skips the headers
+                next(tourney_data)
 
                 for game in tourney_data:   # iterates through every row in the ncaa tourney table for that year to find teams 
 
@@ -69,8 +65,11 @@ if __name__ == "__main__":
                     team2_seed = game_list[vs_index+1][1]    # seed of opponent
                     team2 = " ".join(game_list[vs_index+2:])    # oppenents team name
                     score = game[3] # score of the game
+
+                    if score == "0-0":
+                        continue
                     
-                    try:
+                    try:   # finds scores of each team in the game
                         subt = len(score)-3
                         score1 = int(score[0:subt])
                         score2 = int(score[subt+1:])
@@ -91,50 +90,21 @@ if __name__ == "__main__":
                     team2_stats = [team2_result, team1, team2, score]
 
                     
-
-                    if round == "First Round": 
+                    
+                    if round == "First Round":   # creates a dictionary for the team if they havent been found aleady
                         year_dict[team1] = dict()
                         year_dict[team2] = dict()
 
-                    team1_dict = year_dict[team1]
+                    print(f"year = {year}")
+
+                    team1_dict = year_dict[team1] # Assigns the team dictionary to team1_dict variable
                     team2_dict = year_dict[team2]
 
-                    team1_dict[f"{round}"] = team1_stats
+                    team1_dict[f"{round}"] = team1_stats  # assigns game info to the team dictionary
                     team2_dict[f"{round}"] = team2_stats
                     
 
-                    # year_dict[f"{team1}"][f"{round}"] = game_stats
-
-                    
-
-                    '''
-
-                    team_dict[f"{round}"] = []
-
-                    round_list = team_dict[f"{round}"]
-
-                    round_list.extend(game_stats)
-
-                    print(f"team_dict length  = {len(team_dict)}")
-
-                    '''
-
-                    # print(round_list)
-
-
-
-
-
-
-
-                   
-
-                    # tourney_year[""]
-
-
-                    
-
-            year += 1
+            year += 1  # Increments the year by 1
 
         return tourney_dict
     
@@ -143,56 +113,15 @@ if __name__ == "__main__":
         
         tourney_dict = get_tourney_info()
 
-        for year in tourney_dict:
-            print(f"year: {year}")
+        for year in tourney_dict:   # Prints off all values in tourney_dict
+            print(f"\n\n\n\nyear: {year}")
             year_dict = tourney_dict[f"{year}"]
             for team in year_dict:
-                print(f"team: {team}")
+                print(f"\nteam: {team}")
                 print(year_dict[f"{team}"])
 
-        # print(f"tourney_dict = {tourney_dict}")
-
-
-
-
-
-    
 
 
 main()
 
 
-
-
-
-
-
-
-
-
-'''
-
-
-key = "8nm9CtzeicYltsEkboHv1bGDKGnFBtDku8BdZc8n2C6qDg5l23iPLpO9QwZ2tL9i"
-url = "https://www.ncaa.com/scoreboard/basketball-men/d1"
-
-headers = {"Authorization": f"Bearer {key}"}
-
-response = requests.get(url)
-
-data = response.json()
-print(response.text)
-print(data)
-
-
-
-iowa_state_game_info = s.get_game_info('401725710')
-iowa_state_game_boxscore = s.get_game_boxscore('401725710')
-
-stretch = s.get_games_range('11-30-2022', '12-10-2022')
-
-# print(iowa_state_game_info)
-# print(iowa_state_game_boxscore)
-
-print(stretch)
-'''
