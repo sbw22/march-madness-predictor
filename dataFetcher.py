@@ -107,18 +107,62 @@ if __name__ == "__main__":
             year += 1  # Increments the year by 1
 
         return tourney_dict
+
+    def getRegSeasonInfo(tourney_dict):
+
+        ## Loop through tourney info
+        ## For every year: 
+            ## Find team in tourney
+            ## Find team's regular season stats
+            ## Append list of team's regular season stats to teams dictionary
+            ## Repeat for every team in tourney
+
+        for year in tourney_dict: # loops through every year in the tourney dictionary
+            print(f"\n\nyear = {year}")
+            year_dict = tourney_dict[f"{year}"]
+            # print(f"year_dict = {year_dict}")
+
+            for team in year_dict:
+                # print(f"team = {team}")
+                team_dict = year_dict[f"{team}"]
+                #print(f"team_dict = {team_dict}")
+
+        
+                file_path = f"data/regular_season_data/regular_season_(4-3-25).csv"
+
+                with open(file_path, 'r') as season_file:
+                
+                    season_data = csv.reader(season_file, delimiter=',')    # assigns csv to a variable
+                    next(season_data)  # Skips the headers
+                    next(season_data)
+
+                    for _team in season_data:
+                        if _team[136] == f"{team}" and _team[0] == f"{year}":
+                            # print(f"full team name: {_team[137]} in year {year}")
+                            continue
+                        elif "Connecticut" == f"{team}" and _team[136] == "Uconn" and _team[0] == f"{year}":
+                            print(f"full team name: {_team[137]} in year {year}")
+
+            
+                
+
+
     
 
     def main():
         
         tourney_dict = get_tourney_info()
 
+        season_info = getRegSeasonInfo(tourney_dict)
+
+        '''
         for year in tourney_dict:   # Prints off all values in tourney_dict
             print(f"\n\n\n\nyear: {year}")
             year_dict = tourney_dict[f"{year}"]
             for team in year_dict:
                 print(f"\nteam: {team}")
                 print(year_dict[f"{team}"])
+        '''
 
 
 
