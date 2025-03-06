@@ -12,7 +12,7 @@ if __name__ == "__main__":
     def get_tourney_info():
 
 
-        start_year = 2004  # First tournament year we are checking 
+        start_year = 2023  # First tournament year we are checking  (tourneys before 2007 didn't track advanced metrics) 
         year = start_year   # year variable that increments through the for loop
         end_year = 2024      # First tournament year we are not checking
         year_len = end_year - start_year   # length of time we are checking
@@ -110,6 +110,8 @@ if __name__ == "__main__":
 
     def getRegSeasonInfo(tourney_dict):
 
+        empty_teams = []
+
         ## Loop through tourney info
         ## For every year: 
             ## Find team in tourney
@@ -118,7 +120,7 @@ if __name__ == "__main__":
             ## Repeat for every team in tourney
 
         for year in tourney_dict: # loops through every year in the tourney dictionary
-            print(f"\n\nyear = {year}")
+            print(f"year = {year}")
             year_dict = tourney_dict[f"{year}"]
             # print(f"year_dict = {year_dict}")
 
@@ -136,14 +138,112 @@ if __name__ == "__main__":
                     next(season_data)  # Skips the headers
                     next(season_data)
 
-                    for _team in season_data:
-                        if _team[136] == f"{team}" and _team[0] == f"{year}":
-                            # print(f"full team name: {_team[137]} in year {year}")
-                            continue
-                        elif "Connecticut" == f"{team}" and _team[136] == "Uconn" and _team[0] == f"{year}":
-                            print(f"full team name: {_team[137]} in year {year}")
+                    pre_len = len(team_dict)
 
-            
+                    for _team in season_data:
+                        if (_team[136] == f"{team}" and _team[0] == f"{year}") or ("Connecticut" == f"{team}" and _team[136] == "UConn" and _team[0] == f"{year}"):  # if team in dictionary == team in table on same year, get table info to dictionary
+                            # print(f"full team name: {_team[137]} in year {year}")
+
+                            team_info_list = [_team[4], _team[6], _team[8], _team[10], _team[12], _team[18], _team[20], _team[22], _team[24], _team[26], _team[28], _team[30], _team[32], _team[34], _team[36], _team[38], _team[40], _team[42], _team[44], _team[46], _team[48], _team[50], _team[52], _team[54], _team[56], _team[58], _team[60],  _team[62], _team[64], _team[66], _team[68], _team[70], _team[72], _team[74], _team[76], _team[78], _team[85], _team[87], _team[89], _team[91], _team[93], _team[95],  _team[97], _team[99], _team[101], _team[103], _team[105], _team[107], _team[109], _team[111], _team[113], _team[115], _team[117], _team[119], _team[121], _team[123], _team[125],  _team[127], _team[129], _team[131], _team[133]]
+                            # above list cotains all data points from regular season
+
+                            team_dict["regSeason"] = team_info_list   # Puts the regular season info in the same dictionary as the tourney round info
+                            # print(f"team dict regSeason info = {team_dict["regSeason"]}")
+                            
+                            
+                            continue
+
+                    if len(team_dict) == pre_len: # If we can't find the team in the regular season database, assign regSeason data to False (might try to find a way to access the data later).
+                        # print(f" team = {team_dict}")
+                        empty_teams.append(f"{team}")
+                        team_dict["regSeason"] = False 
+
+
+        return empty_teams   # returns teams with no regular season data
+    
+    
+    def verifyGames(empty_teams, tourney_dict):   # Makes sure both teams in a game have regular season stats
+        print("empty teams:")
+        for team in empty_teams:
+            print(team)
+        
+        for year in tourney_dict: # loops through every year in the tourney dictionary
+            print(f"year = {year}")
+            year_dict = tourney_dict[f"{year}"]
+            # print(f"year_dict = {year_dict}")
+
+            for team in year_dict:
+
+                team_dict = year_dict[f"{team}"]
+
+                for game in team_dict:   # Loops through each game a team played in the tourney to verify they played a team with regular season stats (that we can access)
+                    if game == "regSeason":  # prints all rounds for a team and skips the regSeason array in team_dict
+                        continue
+
+                    team1 = team_dict[game][1]
+                    team2 = team_dict[game][2]
+                    teams = [team1, team2]
+                    opp = team1 if team1 != team else team2  # Finds the opponent in a game
+                    
+                    if opp in empty_teams or team in empty_teams:    # If the team or team's opponent does not have regular season stats, do NOT verify the game
+                        is_verified = False   
+                        team_dict[game].append(is_verified) 
+                    else:                                           # If both teams in the game have regular season stats, verify the game
+                        is_verified = True
+                        team_dict[game].append(is_verified)
+                    
+                    
+
+    
+    def sortGames(tourney_dict):
+        i = 0
+        counter = f"game{i}"
+
+        verified_dict = dict()
+
+        for year in tourney_dict: # loops through every year in the tourney dictionary
+            print(f"year = {year}")
+            year_dict = tourney_dict[f"{year}"]
+            # print(f"year_dict = {year_dict}")
+
+            for team in year_dict:
+
+                team_dict = year_dict[f"{team}"]
+
+                for game in team_dict:
+
+                    if team_dict["regSeason"] == False or game == "regSeason":
+                        continue
+
+                    score = team_dict[game][3]
+
+                    # print(f"score = {score}")
+
+                    try:   # finds scores of each team in the game
+                        subt = len(score)-3
+                        score1 = int(score[0:subt])
+                        score2 = int(score[subt+1:])
+                    except:
+                        subt = len(score)-4
+                        score1 = int(score[0:subt])
+                        score2 = int(score[subt+1:])
+
+                    scores = [score1, score2]  # Keeps both the scores in a list
+
+                    print(f"scores = {scores}")
+
+                    # Maybe add [ [regSeason_of_team1, regSeasonOfTeam2], [team1_score, team2_score] ] list to verified_dict()?
+
+                      
+
+
+                        
+                
+                    
+
+        
+        
+        
                 
 
 
@@ -153,7 +253,14 @@ if __name__ == "__main__":
         
         tourney_dict = get_tourney_info()
 
-        season_info = getRegSeasonInfo(tourney_dict)
+        empty_teams = getRegSeasonInfo(tourney_dict)
+
+        verifyGames(empty_teams, tourney_dict)  # Makes sure both teams in a game have regular season stats
+
+        # maybe make a function that makes a dictionary containing games and teams in those games, to make it easier to put games into the model?
+        # Make sure teams are from the same tourney/year. 
+
+        sortGames(tourney_dict)
 
         '''
         for year in tourney_dict:   # Prints off all values in tourney_dict
