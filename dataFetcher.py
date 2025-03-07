@@ -7,12 +7,13 @@ if __name__ == "__main__":
     import requests
     from bs4 import BeautifulSoup
     import cbbpy.mens_scraper as s
+    import json
 
 
     def get_tourney_info():
 
 
-        start_year = 2023  # First tournament year we are checking  (tourneys before 2007 didn't track advanced metrics) 
+        start_year = 2007  # First tournament year we are checking  (tourneys before 2007 didn't track advanced metrics) 
         year = start_year   # year variable that increments through the for loop
         end_year = 2024      # First tournament year we are not checking
         year_len = end_year - start_year   # length of time we are checking
@@ -196,8 +197,8 @@ if __name__ == "__main__":
 
     
     def sortGames(tourney_dict):
-        i = 0
-        counter = f"game{i}"
+        i = 1
+        counter = f"game_{i}"
 
         verified_dict = dict()
 
@@ -210,10 +211,15 @@ if __name__ == "__main__":
 
                 team_dict = year_dict[f"{team}"]
 
+
                 for game in team_dict:
 
-                    if team_dict["regSeason"] == False or game == "regSeason":
+                    invalid = False  # counter that keeps track of whether there is a duplicate of the current game or not
+
+                    if game == "regSeason" or team_dict[game][-1] == False:
                         continue
+                    if team_dict["regSeason"] == False:
+                        invalid = True
 
                     score = team_dict[game][3]
 
@@ -230,9 +236,38 @@ if __name__ == "__main__":
 
                     scores = [score1, score2]  # Keeps both the scores in a list
 
-                    print(f"scores = {scores}")
+                    team1 = team_dict[game][1]
+                    team2 = team_dict[game][2]
+                    teams = [team1, team2]
 
-                    # Maybe add [ [regSeason_of_team1, regSeasonOfTeam2], [team1_score, team2_score] ] list to verified_dict()?
+                    opp = team1 if team1 != team else team2  # Finds the opponent in a game
+                    # home_team = team1 if team1 == team else team2 # Finds home team in a game
+                    opp_score = score1 if team1 != team else score2  # Finds the opponent SCORE in a game
+                    team_score = score1 if team1 == team else score2 # Finds the team's SCORE in a game
+
+                    game_stats = [ [team_dict["regSeason"], year_dict[opp]["regSeason"]], [team_score, opp_score], year]
+                    # game_stats [ [regSeason_of_team1, regSeasonOfTeam2], [team1_score, team2_score] ] 
+
+                    for game2 in verified_dict:
+                        game_2_stats = verified_dict[game2]
+                        if (game_stats[0][0] == game_2_stats[0][1] and game_stats[0][1] == game_2_stats[0][0]) and (game_stats[1][0] == game_2_stats[1][1] and game_stats[1][1] == game_2_stats[1][0]) and game_stats[2] == game_2_stats[2]:
+                            # if current game is identical to another game in verified_dict (just with teams and scores flipped around), don't duplicate the game
+                            invalid = True
+
+                        
+
+                    if invalid == True: # If there is a duplicate of the current game, skip it
+                        continue
+
+                    verified_dict[counter] = game_stats
+
+                    
+
+                    i += 1
+                    counter = f"game_{i}"
+
+
+        return verified_dict
 
                       
 
@@ -260,7 +295,7 @@ if __name__ == "__main__":
         # maybe make a function that makes a dictionary containing games and teams in those games, to make it easier to put games into the model?
         # Make sure teams are from the same tourney/year. 
 
-        sortGames(tourney_dict)
+        verified_dict = sortGames(tourney_dict)
 
         '''
         for year in tourney_dict:   # Prints off all values in tourney_dict
@@ -271,6 +306,16 @@ if __name__ == "__main__":
                 print(year_dict[f"{team}"])
         '''
 
+        
+        for game in verified_dict:   # Prints off all values in verified_dict
+            print(f"\n\n\n\ngame: {game}")
+
+            print(f"{verified_dict[game]}")
+
+        with open('verified_data.json', 'w') as file:
+            json.dump(verified_dict, file)
+        
+        
 
 
 main()
