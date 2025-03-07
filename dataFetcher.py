@@ -8,12 +8,16 @@ if __name__ == "__main__":
     from bs4 import BeautifulSoup
     import cbbpy.mens_scraper as s
     import json
+    import numpy as np
+    import random
+    from random import randint
+    from sklearn.preprocessing import MinMaxScaler
 
 
     def get_tourney_info():
 
 
-        start_year = 2007  # First tournament year we are checking  (tourneys before 2007 didn't track advanced metrics) 
+        start_year = 2023  # First tournament year we are checking  (tourneys before 2007 didn't track advanced metrics) 
         year = start_year   # year variable that increments through the for loop
         end_year = 2024      # First tournament year we are not checking
         year_len = end_year - start_year   # length of time we are checking
@@ -262,12 +266,83 @@ if __name__ == "__main__":
                     verified_dict[counter] = game_stats
 
                     
-
                     i += 1
                     counter = f"game_{i}"
 
+                
+
 
         return verified_dict
+    
+
+    def scale_games(verified_dict):
+
+
+        # stat_counter = f"stat{i}"
+        scaled_team_stats = dict()  # holds all the scaled down team stats
+        scaled_opp_stats = dict()
+
+        scaled_team_score = []  # holds all the scaled down team points
+        scaled_opp_score = []
+
+        point_scaler = MinMaxScaler(feature_range=(0,1))
+
+        for game in verified_dict:    # Puts all the points scored in a game into two seperate lists: points scored by home and away teams. 
+            game_points = verified_dict[game][1]
+            
+            scaled_team_score.append(game_points[0])
+            scaled_opp_score.append(game_points[1])
+
+
+        scaled_team_score = np.array(scaled_team_score).reshape(-1, 1)  # Converts all numbers in training set to numpy. 
+        scaled_opp_score = np.array(scaled_opp_score).reshape(-1, 1)   
+        scaled_team_score = point_scaler.fit_transform((scaled_team_score))   #  scales all numbers down to between 0 and 1
+        scaled_opp_score = point_scaler.fit_transform((scaled_opp_score))
+
+        print(f"scaled_team_score = {scaled_team_score}")
+
+        
+
+        
+
+        
+        for i in range(0, 64):
+            stat_counter = f"stat{i}" 
+            scaled_team_stats[stat_counter] = []
+            scaled_opp_stats[stat_counter] = []
+        
+
+            for game in verified_dict:
+                team_stats = verified_dict[game][0][0]
+                opp_stats = verified_dict[game][0][1]
+                # team_score = verified_dict[game][1][0]
+                # opp_score = verified_dict[game][1][1]
+
+                scaled_team_stats[stat_counter].append(team_stats[i])
+                scaled_opp_stats[stat_counter].append(opp_stats[i])
+
+                print(f"game = {game}")
+                print(f"game stats = {verified_dict[game]}")
+                print(f"game dict len = {len(team_stats)}")
+                print(f"team stat 1 = {team_stats[0]}")
+            
+            new_scaler = MinMaxScaler(feature_range=(0,1))
+
+            scaled_team_stats[stat_counter] = np.array(scaled_team_stats[stat_counter]).reshape(-1, 1)  # Converts all numbers in training set to numpy. 
+            scaled_opp_stats[stat_counter] = np.array(scaled_opp_stats[stat_counter]).reshape(-1, 1)  # Converts all numbers in training set to numpy. 
+
+            scaled_team_stats[stat_counter] = new_scaler.fit_transform((scaled_team_stats[stat_counter]))
+            scaled_opp_stats[stat_counter] = new_scaler.fit_transform((scaled_opp_stats[stat_counter]))
+
+            
+            print(f"scaled_team_dict = {scaled_team_stats[stat_counter]}")
+            print(f"scaled_opp_dict = {scaled_opp_stats[stat_counter]}")
+        
+
+        return [scaled_team_stats, scaled_opp_stats, scaled_team_score, scaled_opp_score, point_scaler]
+
+            
+            
 
                       
 
@@ -297,6 +372,18 @@ if __name__ == "__main__":
 
         verified_dict = sortGames(tourney_dict)
 
+        scaled_list = scale_games(verified_dict)
+
+        scaled_team_stats = scaled_list[0]  # holds all the scaled down team stats
+        scaled_opp_stats = scaled_list[1]
+
+        scaled_team_score = scaled_list[2]  # holds all the scaled down team points
+        scaled_opp_score = scaled_list[3]
+
+        point_scaler = scaled_list[4]   # scaler for the point outcome of a game. Will need this later to un-scale outputs of the model (I think)
+
+
+
         '''
         for year in tourney_dict:   # Prints off all values in tourney_dict
             print(f"\n\n\n\nyear: {year}")
@@ -304,16 +391,18 @@ if __name__ == "__main__":
             for team in year_dict:
                 print(f"\nteam: {team}")
                 print(year_dict[f"{team}"])
-        '''
+        
 
         
         for game in verified_dict:   # Prints off all values in verified_dict
             print(f"\n\n\n\ngame: {game}")
 
             print(f"{verified_dict[game]}")
+        
+        ''' 
 
-        with open('verified_data.json', 'w') as file:
-            json.dump(verified_dict, file)
+        # with open('verified_data.json', 'w') as file:
+        #    json.dump(verified_dict, file)
         
         
 
