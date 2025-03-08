@@ -19,7 +19,7 @@ if __name__ == "__main__":
     def get_tourney_info():
 
 
-        start_year = 2023  # First tournament year we are checking  (tourneys before 2007 didn't track advanced metrics) 
+        start_year = 2007  # First tournament year we are checking  (tourneys before 2007 didn't track advanced metrics) 
         year = start_year   # year variable that increments through the for loop
         end_year = 2024      # First tournament year we are not checking
         year_len = end_year - start_year   # length of time we are checking
