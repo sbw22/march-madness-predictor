@@ -120,7 +120,7 @@ if __name__ == "__main__":
         print("\n")
 
         for i, guess in enumerate(predictions):
-            i = 0
+            # i = 0
 
             # print(f"pre-guess guess = {guess}")
             guess_1 = guess[0]
@@ -154,7 +154,7 @@ if __name__ == "__main__":
             score2 = int(np.round(score2.item()))
 
             print(f"guess = {guess_1} to {guess_2}, actual score = {score1} to {score2}\n")
-            i += 1
+            # i += 1
 
 
     main()
