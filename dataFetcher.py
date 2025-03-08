@@ -1,6 +1,6 @@
 if __name__ == "__main__":     
 
-  
+    import random
     import time
     import csv
     import json
@@ -12,6 +12,8 @@ if __name__ == "__main__":
     import random
     from random import randint
     from sklearn.preprocessing import MinMaxScaler
+    from joblib import dump
+    import pickle
 
 
     def get_tourney_info():
@@ -299,18 +301,16 @@ if __name__ == "__main__":
         scaled_team_score = point_scaler.fit_transform((scaled_team_score))   #  scales all numbers down to between 0 and 1
         scaled_opp_score = point_scaler.fit_transform((scaled_opp_score))
 
-        print(f"scaled_team_score = {scaled_team_score}")
 
         
 
         
 
         
-        for i in range(0, 64):
+        for i in range(0, 61):
             stat_counter = f"stat{i}" 
             scaled_team_stats[stat_counter] = []
-            scaled_opp_stats[stat_counter] = []
-        
+            scaled_opp_stats[stat_counter] = []        
 
             for game in verified_dict:
                 team_stats = verified_dict[game][0][0]
@@ -321,22 +321,20 @@ if __name__ == "__main__":
                 scaled_team_stats[stat_counter].append(team_stats[i])
                 scaled_opp_stats[stat_counter].append(opp_stats[i])
 
-                print(f"game = {game}")
-                print(f"game stats = {verified_dict[game]}")
-                print(f"game dict len = {len(team_stats)}")
-                print(f"team stat 1 = {team_stats[0]}")
+                # print(f"game = {game}")
+                # print(f"game stats = {verified_dict[game]}")
+                # print(f"game dict len = {len(team_stats)}")
+                # print(f"team stat 1 = {team_stats[0]}")
             
             new_scaler = MinMaxScaler(feature_range=(0,1))
 
             scaled_team_stats[stat_counter] = np.array(scaled_team_stats[stat_counter]).reshape(-1, 1)  # Converts all numbers in training set to numpy. 
             scaled_opp_stats[stat_counter] = np.array(scaled_opp_stats[stat_counter]).reshape(-1, 1)  # Converts all numbers in training set to numpy. 
-
+            
             scaled_team_stats[stat_counter] = new_scaler.fit_transform((scaled_team_stats[stat_counter]))
             scaled_opp_stats[stat_counter] = new_scaler.fit_transform((scaled_opp_stats[stat_counter]))
 
             
-            print(f"scaled_team_dict = {scaled_team_stats[stat_counter]}")
-            print(f"scaled_opp_dict = {scaled_opp_stats[stat_counter]}")
         
 
         return [scaled_team_stats, scaled_opp_stats, scaled_team_score, scaled_opp_score, point_scaler]
@@ -377,10 +375,41 @@ if __name__ == "__main__":
         scaled_team_stats = scaled_list[0]  # holds all the scaled down team stats
         scaled_opp_stats = scaled_list[1]
 
-        scaled_team_score = scaled_list[2]  # holds all the scaled down team points
-        scaled_opp_score = scaled_list[3]
+        scaled_team_scores = scaled_list[2]  # holds all the scaled down team points
+        scaled_opp_scores = scaled_list[3]
 
         point_scaler = scaled_list[4]   # scaler for the point outcome of a game. Will need this later to un-scale outputs of the model (I think)
+
+
+        stacked_team_stats = np.hstack([scaled_team_stats[f"stat{i}"] for i in range(61)])    # Rearanges the data to have each column contain 1 type of stat
+        stacked_opp_stats = np.hstack([scaled_opp_stats[f"stat{i}"] for i in range(61)])
+
+
+
+        # stacked_team_scores = np.hstack([scaled_team_scores for i in range(2)])  # I don't think I need to format the scores in the same way as the stats, as the scores are labels 
+        # stacked_opp_scores = np.hstack([scaled_opp_scores for i in range(2)])
+
+       
+
+        stacked_team_stats = stacked_team_stats[:, :, np.newaxis]  # Adds a third dimension (to the vector)
+        stacked_opp_stats = stacked_opp_stats[:, :, np.newaxis]   # Adds a third dimension
+
+        # stacked_team_scores = stacked_team_scores[:, :, np.newaxis]  # I don't think I need to format the scores in the same way as the stats, as the scores are labels
+        # stacked_opp_scores = stacked_opp_scores[:, :, np.newaxis]   
+    
+
+        print(f"stacked_opp_stats = {type(stacked_opp_stats)}")
+        print(f"stacked_team_stats = {type(stacked_team_stats)}")
+
+        print(f"point_scaler = {type(point_scaler)}")
+
+        np.savez('team_stats.npz', stacked_team_stats=stacked_team_stats)  
+        np.savez('opp_stats.npz', stacked_opp_stats=stacked_opp_stats)
+
+        np.savez('team_scores.npz', scaled_team_scores=scaled_team_scores)
+        np.savez('opp_scores.npz', scaled_opp_scores=scaled_opp_scores)
+
+        dump(point_scaler, 'point_scaler.pkl')
 
 
 
