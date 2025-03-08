@@ -119,7 +119,7 @@ if __name__ == "__main__":
 
         print("\n")
 
-        for guess in predictions:
+        for i, guess in enumerate(predictions):
             i = 0
 
             # print(f"pre-guess guess = {guess}")
