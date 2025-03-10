@@ -247,12 +247,12 @@ if __name__ == "__main__":
                     teams = [team1, team2]
 
                     opp = team1 if team1 != team else team2  # Finds the opponent in a game
-                    # home_team = team1 if team1 == team else team2 # Finds home team in a game
+                    home_team = team1 if team1 == team else team2 # Finds home team in a game
                     opp_score = score1 if team1 != team else score2  # Finds the opponent SCORE in a game
                     team_score = score1 if team1 == team else score2 # Finds the team's SCORE in a game
 
-                    game_stats = [ [team_dict["regSeason"], year_dict[opp]["regSeason"]], [team_score, opp_score], year]
-                    # game_stats [ [regSeason_of_team1, regSeasonOfTeam2], [team1_score, team2_score] ] 
+                    game_stats = [ [team_dict["regSeason"], year_dict[opp]["regSeason"]], [team_score, opp_score], year, home_team, opp]  # all the stats from the game that we are passing on to predict.py
+
 
                     for game2 in verified_dict:
                         game_2_stats = verified_dict[game2]
@@ -284,22 +284,40 @@ if __name__ == "__main__":
         scaled_team_stats = dict()  # holds all the scaled down team stats
         scaled_opp_stats = dict()
 
-        scaled_team_score = []  # holds all the scaled down team points
-        scaled_opp_score = []
+        pre_scaled_team_scores = []  # holds all the scaled down team points
+        pre_scaled_opp_scores = []
+
+        years = []
+        team_names = []
+        opp_names = []
 
         point_scaler = MinMaxScaler(feature_range=(0,1))
 
         for game in verified_dict:    # Puts all the points scored in a game into two seperate lists: points scored by home and away teams. 
             game_points = verified_dict[game][1]
             
-            scaled_team_score.append(game_points[0])
-            scaled_opp_score.append(game_points[1])
+            pre_scaled_team_scores.append(game_points[0])
+            pre_scaled_opp_scores.append(game_points[1])
+
+            year = verified_dict[game][2]
+            team_name = verified_dict[game][3]
+            opp_name = verified_dict[game][4]
+
+            # print(f"year = {year}, team_name = {team_name}, opp_name = {opp_name}")
+            # print(f"game_points = {game_points}")
+
+            years.append(year)
+            team_names.append(team_name)
+            opp_names.append(opp_name)
+
+            
 
 
-        scaled_team_score = np.array(scaled_team_score).reshape(-1, 1)  # Converts all numbers in training set to numpy. 
-        scaled_opp_score = np.array(scaled_opp_score).reshape(-1, 1)   
-        scaled_team_score = point_scaler.fit_transform((scaled_team_score))   #  scales all numbers down to between 0 and 1
-        scaled_opp_score = point_scaler.fit_transform((scaled_opp_score))
+
+        scaled_team_scores = np.array(pre_scaled_team_scores).reshape(-1, 1)  # Converts all numbers in training set to numpy. 
+        scaled_opp_scores = np.array(pre_scaled_opp_scores).reshape(-1, 1)   
+        scaled_team_scores = point_scaler.fit_transform((scaled_team_scores))   #  scales all numbers down to between 0 and 1
+        scaled_opp_scores = point_scaler.transform((scaled_opp_scores))
 
 
         
@@ -315,8 +333,7 @@ if __name__ == "__main__":
             for game in verified_dict:
                 team_stats = verified_dict[game][0][0]
                 opp_stats = verified_dict[game][0][1]
-                # team_score = verified_dict[game][1][0]
-                # opp_score = verified_dict[game][1][1]
+
 
                 scaled_team_stats[stat_counter].append(team_stats[i])
                 scaled_opp_stats[stat_counter].append(opp_stats[i])
@@ -337,7 +354,7 @@ if __name__ == "__main__":
             
         
 
-        return [scaled_team_stats, scaled_opp_stats, scaled_team_score, scaled_opp_score, point_scaler]
+        return [scaled_team_stats, scaled_opp_stats, scaled_team_scores, scaled_opp_scores, point_scaler, years, team_names, opp_names, pre_scaled_team_scores, pre_scaled_opp_scores]
 
             
             
@@ -380,22 +397,39 @@ if __name__ == "__main__":
 
         point_scaler = scaled_list[4]   # scaler for the point outcome of a game. Will need this later to un-scale outputs of the model (I think)
 
+        years = scaled_list[5]
+        team_names = scaled_list[6]
+        opp_names = scaled_list[7]
+
+        pre_scaled_team_scores = scaled_list[8]
+        pre_scaled_opp_scores = scaled_list[9]
+
+        
+
+        print(f"team_names: {len(team_names)}")
+        print(f"opp_names: {len(opp_names)}")
+        print(f"years: {len(years)}")
+        print(f"scaled_team_scores: {len(scaled_team_scores)}")
+        print(f"scaled_opp_scores: {len(scaled_opp_scores)}\n")
+
+        for i in range(len(years)):
+            print(f"team_name: {team_names[i]}")
+            print(f"opp_name: {opp_names[i]}")
+            print(f"year: {years[i]}")
+            print(f"pre_scaled_team_score: {pre_scaled_team_scores[i]}")
+            print(f"scaled_team_score: {scaled_team_scores[i]}")
+            print(f"pre_scaled_opp_score: {pre_scaled_opp_scores[i]}")
+            print(f"scaled_opp_score: {scaled_opp_scores[i]}\n")
+
 
         stacked_team_stats = np.hstack([scaled_team_stats[f"stat{i}"] for i in range(61)])    # Rearanges the data to have each column contain 1 type of stat
         stacked_opp_stats = np.hstack([scaled_opp_stats[f"stat{i}"] for i in range(61)])
-
-
-
-        # stacked_team_scores = np.hstack([scaled_team_scores for i in range(2)])  # I don't think I need to format the scores in the same way as the stats, as the scores are labels 
-        # stacked_opp_scores = np.hstack([scaled_opp_scores for i in range(2)])
 
        
 
         stacked_team_stats = stacked_team_stats[:, :, np.newaxis]  # Adds a third dimension (to the vector)
         stacked_opp_stats = stacked_opp_stats[:, :, np.newaxis]   # Adds a third dimension
 
-        # stacked_team_scores = stacked_team_scores[:, :, np.newaxis]  # I don't think I need to format the scores in the same way as the stats, as the scores are labels
-        # stacked_opp_scores = stacked_opp_scores[:, :, np.newaxis]   
     
 
         print(f"stacked_opp_stats = {type(stacked_opp_stats)}")
@@ -408,6 +442,10 @@ if __name__ == "__main__":
 
         np.savez('team_scores.npz', scaled_team_scores=scaled_team_scores)
         np.savez('opp_scores.npz', scaled_opp_scores=scaled_opp_scores)
+
+        np.savez('_years.npz', years=years)
+        np.savez('_team_names.npz', team_names=team_names)
+        np.savez('_opp_names.npz', opp_names=opp_names)
 
         dump(point_scaler, 'point_scaler.pkl')
 
