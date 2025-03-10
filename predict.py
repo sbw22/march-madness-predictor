@@ -157,6 +157,13 @@ if __name__ == "__main__":
             # i += 1
 
 
+            # ORGANIZE CODE (SEPERATE INTO FUNCTIONS)
+            # CREATE FUNCTIONS THAT . . . 
+            # 1) COMPILES/FITS MODEL
+            # 2) PREDICTS INDIVIDUAL GAMES
+            # 3) PREDICTS ENTIRE TOURNAMENTS (FUNCTION WILL NEED TO ORGANIZE GAMES BASED ON TYPE OF TOURNAMENT (CONFERENCE, NCAA, ETC.))
+
+
     main()
 
 
