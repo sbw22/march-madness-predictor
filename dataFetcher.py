@@ -404,22 +404,6 @@ if __name__ == "__main__":
         pre_scaled_team_scores = scaled_list[8]
         pre_scaled_opp_scores = scaled_list[9]
 
-        
-
-        print(f"team_names: {len(team_names)}")
-        print(f"opp_names: {len(opp_names)}")
-        print(f"years: {len(years)}")
-        print(f"scaled_team_scores: {len(scaled_team_scores)}")
-        print(f"scaled_opp_scores: {len(scaled_opp_scores)}\n")
-
-        for i in range(len(years)):
-            print(f"team_name: {team_names[i]}")
-            print(f"opp_name: {opp_names[i]}")
-            print(f"year: {years[i]}")
-            print(f"pre_scaled_team_score: {pre_scaled_team_scores[i]}")
-            print(f"scaled_team_score: {scaled_team_scores[i]}")
-            print(f"pre_scaled_opp_score: {pre_scaled_opp_scores[i]}")
-            print(f"scaled_opp_score: {scaled_opp_scores[i]}\n")
 
 
         stacked_team_stats = np.hstack([scaled_team_stats[f"stat{i}"] for i in range(61)])    # Rearanges the data to have each column contain 1 type of stat
@@ -431,12 +415,6 @@ if __name__ == "__main__":
         stacked_opp_stats = stacked_opp_stats[:, :, np.newaxis]   # Adds a third dimension
 
     
-
-        print(f"stacked_opp_stats = {type(stacked_opp_stats)}")
-        print(f"stacked_team_stats = {type(stacked_team_stats)}")
-
-        print(f"point_scaler = {type(point_scaler)}")
-
         np.savez('team_stats.npz', stacked_team_stats=stacked_team_stats)  
         np.savez('opp_stats.npz', stacked_opp_stats=stacked_opp_stats)
 

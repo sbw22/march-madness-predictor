@@ -194,14 +194,7 @@ if __name__ == "__main__":
 
 
 
-        '''
-        np.savez('years.npz', years=years)
-        np.savez('team_names.npz', team_names=team_names)
-        np.savez('opp_names.npz', opp_names=opp_names)
-        '''
-
-        # print(f"team_scores = {team_scores}")
-        # print(f"point_scaler = {point_scaler}")
+ 
 
         print(f"team_stats len = {len(team_stats)}")
 
@@ -216,62 +209,10 @@ if __name__ == "__main__":
             test_size=test_size, random_state=42
         )
 
-        '''
 
-        print(f"team_names: {len(team_names)}")
-        print(f"opp_names: {len(opp_names)}")
-        print(f"years: {len(years)}")
-        print(f"team_scores: {len(team_scores)}")
-        print(f"opp_scores: {len(opp_scores)}\n")
-
-        print(f"test_team_scores: {len(test_team_scores)}")
-        print(f"test_opp_scores: {len(test_opp_scores)}\n")
-
-        print(f"team_names: {len(team_names)}")
-        print(f"opp_names: {len(opp_names)}")
-        print(f"years: {len(years)}")
-        print(f"team_scores: {len(team_scores)}")
-        print(f"opp_scores: {len(opp_scores)}\n")
-
-        
-
-        for i in range(len(years)):
-            print(f"team_name: {team_names[i]}")
-            print(f"opp_name: {opp_names[i]}")
-            print(f"year: {years[i]}")
-            print(f"team_score: {team_scores[i]}")
-            print(f"opp_score: {opp_scores[i]}\n")
-        '''
 
 
         model = makeModel(team_stats_train, opp_stats_train, team_scores_train, opp_scores_train)
-
-
-        '''
-        print(f"team_names: {len(team_names)}")
-        print(f"opp_names: {len(opp_names)}")
-        print(f"years: {len(years)}")
-        print(f"team_scores: {len(team_scores)}")
-        print(f"opp_scores: {len(opp_scores)}\n")
-
-        print(f"test_team_scores: {len(test_team_scores)}")
-        print(f"test_opp_scores: {len(test_opp_scores)}\n")
-
-        print(f"team_names: {len(team_names)}")
-        print(f"opp_names: {len(opp_names)}")
-        print(f"years: {len(years)}")
-        print(f"team_scores: {len(team_scores)}")
-        print(f"opp_scores: {len(opp_scores)}\n")
-
-        
-        for i in range(len(years)):
-            print(f"team_name: {team_names[i]}")
-            print(f"opp_name: {opp_names[i]}")
-            print(f"year: {years[i]}")
-            print(f"team_score: {team_scores[i]}")
-            print(f"opp_score: {opp_scores[i]}\n")
-
-        '''
         
        
 
