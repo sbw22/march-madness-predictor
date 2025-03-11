@@ -14,6 +14,7 @@ if __name__ == "__main__":
     from sklearn.preprocessing import MinMaxScaler
     from joblib import dump
     import pickle
+    import joblib
 
 
     def get_tourney_info():
@@ -320,9 +321,7 @@ if __name__ == "__main__":
         scaled_opp_scores = point_scaler.transform((scaled_opp_scores))
 
 
-        
-
-        
+        scaler_dict = dict()
 
         
         for i in range(0, 61):
@@ -351,10 +350,12 @@ if __name__ == "__main__":
             scaled_team_stats[stat_counter] = new_scaler.fit_transform((scaled_team_stats[stat_counter]))
             scaled_opp_stats[stat_counter] = new_scaler.fit_transform((scaled_opp_stats[stat_counter]))
 
+            scaler_dict[stat_counter] = new_scaler
+
             
         
 
-        return [scaled_team_stats, scaled_opp_stats, scaled_team_scores, scaled_opp_scores, point_scaler, years, team_names, opp_names, pre_scaled_team_scores, pre_scaled_opp_scores]
+        return [scaled_team_stats, scaled_opp_stats, scaled_team_scores, scaled_opp_scores, point_scaler, years, team_names, opp_names, pre_scaled_team_scores, pre_scaled_opp_scores, scaler_dict]
 
             
             
@@ -404,6 +405,8 @@ if __name__ == "__main__":
         pre_scaled_team_scores = scaled_list[8]
         pre_scaled_opp_scores = scaled_list[9]
 
+        scaler_dict = scaled_list[10]
+
 
 
         stacked_team_stats = np.hstack([scaled_team_stats[f"stat{i}"] for i in range(61)])    # Rearanges the data to have each column contain 1 type of stat
@@ -426,6 +429,8 @@ if __name__ == "__main__":
         np.savez('_opp_names.npz', opp_names=opp_names)
 
         dump(point_scaler, 'point_scaler.pkl')
+        
+        joblib.dump(scaler_dict, 'scalers.joblib')
 
 
 
