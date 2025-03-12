@@ -56,6 +56,15 @@ if __name__ == "__main__":
         x = Dropout(0.1)(x)
         x = BatchNormalization()(x)
 
+        x = Dense(128, activation='relu')(x)
+        x = Dropout(0.1)(x)
+        x = BatchNormalization()(x)
+
+
+        x = Dense(64, activation='relu')(x)
+        x = Dropout(0.1)(x)
+        x = BatchNormalization()(x)
+
         x = Dense(32, activation='relu')(x)
         x = Dropout(0.1)(x)
         x = BatchNormalization()(x)
@@ -95,22 +104,20 @@ if __name__ == "__main__":
         if type(test_team_scores) != int:
             scores_len = len(test_team_scores)
 
-        predictions = model.predict([test_team_stats, test_opp_stats], batch_size=1, verbose=0)
+        predictions_1 = model.predict([test_team_stats, test_opp_stats], batch_size=1, verbose=0)
+        predictions_2 = model.predict([test_opp_stats, test_team_stats], batch_size=1, verbose=0)
+        # Add a predictions 2 here that switches the sports of test_team_stats and team_opp_stats to make sure the model isn't biasing the first team
 
         total_guesses = len(test_opp_names)
         true_guesses = 0
 
-        for i, guess in enumerate(predictions):
-
-            
-            # i = 0
-
-            # print(f"Index {i}, test_scores[i]: {test_team_scores[i]}, test_opp_scores[i]: {test_opp_scores[i]}")
+        team_right_scores = []
+        team_left_scores = []
+        opp_right_scores = []
+        opp_left_scores = []
 
 
-            year = test_years[i]
-            team_name = test_team_names[i]
-            opp_name = test_opp_names[i]
+        for i, guess in enumerate(predictions_1):  # Rescales predicted scores to a readable value
 
             # print(f"pre-guess guess = {guess}")
             guess_1 = guess[0]
@@ -125,10 +132,54 @@ if __name__ == "__main__":
             guess_1 = point_scaler.inverse_transform(guess_1_reshaped)
             guess_2 = point_scaler.inverse_transform(guess_2_reshaped)
 
-            # print(f"test_team_scores[{i}]: {test_team_scores[i]}, type: {type(test_team_scores[i])}")
-            # print(f"test_opp_scores[{i}]: {test_opp_scores[i]}, type: {type(test_opp_scores[i])}")
+
+            # getting integer value from numpy arrays
+
+            guess_1 = int(np.round(guess_1.item()))
+            guess_2 = int(np.round(guess_2.item()))
 
 
+            team_left_scores.append(guess_1)
+            opp_right_scores.append(guess_2)
+
+        for i, guess in enumerate(predictions_2):   # Predicts the same games as the previous for loop, but with the teams on different sides of the predict function
+
+            # print(f"pre-guess guess = {guess}")
+            guess_1 = guess[0]
+            guess_2 = guess[1]
+            # print(f"pre_guess 1 = {guess[0]}, pre_guess 2 = {guess[1]}")
+ 
+            guess_1_reshaped = guess_1.reshape(-1,1)  # Reshape to (1, 1) for inverse_transform
+            guess_2_reshaped = guess_2.reshape(-1,1)  # Reshape to (1, 1) for inverse_transform
+
+
+            # Inverse transform the prediction
+            guess_1 = point_scaler.inverse_transform(guess_1_reshaped)
+            guess_2 = point_scaler.inverse_transform(guess_2_reshaped)
+
+
+            # getting integer value from numpy arrays
+
+            guess_1 = int(np.round(guess_1.item()))
+            guess_2 = int(np.round(guess_2.item()))
+
+
+            team_right_scores.append(guess_2)
+            opp_left_scores.append(guess_1)
+
+
+
+
+
+
+
+
+        
+        for i in range(len(team_right_scores)):
+
+            year = test_years[i]   # Block of code gets year of the game and both teams' names
+            team_name = test_team_names[i]
+            opp_name = test_opp_names[i]
 
             if scores_len > 0: # only getting real scores if real scores were provided to us
             
@@ -143,10 +194,10 @@ if __name__ == "__main__":
                 score1 = 0
 
 
-            # getting integer value from numpy arrays
 
-            guess_1 = int(np.round(guess_1.item()))
-            guess_2 = int(np.round(guess_2.item()))
+            guess_1 = round((team_right_scores[i] + team_left_scores[i])/2)
+            guess_2 = round((opp_right_scores[i] + opp_left_scores[i])/2)
+
 
             if guess_1 == guess_2:
                 guess_1 += 1
@@ -239,6 +290,16 @@ if __name__ == "__main__":
 
                             opp_info_list = [_team[4], _team[6], _team[8], _team[10], _team[12], _team[18], _team[20], _team[22], _team[24], _team[26], _team[28], _team[30], _team[32], _team[34], _team[36], _team[38], _team[40], _team[42], _team[44], _team[46], _team[48], _team[50], _team[52], _team[54], _team[56], _team[58], _team[60],  _team[62], _team[64], _team[66], _team[68], _team[70], _team[72], _team[74], _team[76], _team[78], _team[85], _team[87], _team[89], _team[91], _team[93], _team[95],  _team[97], _team[99], _team[101], _team[103], _team[105], _team[107], _team[109], _team[111], _team[113], _team[115], _team[117], _team[119], _team[121], _team[123], _team[125],  _team[127], _team[129], _team[131], _team[133]]
                             # above list cotains all data points from regular season
+
+            
+            def tourney_func():
+
+                # Get all teams in the tournament
+                # Get all the correct matchups
+                # Format the games in a way that winners play winners
+
+
+                print(f"hello")
                         
                             
             if team_info_list == []:
@@ -342,7 +403,7 @@ if __name__ == "__main__":
         print(f"team_stats len = {len(team_stats)}")
 
 
-        test_size = 0.005  # Adjust as needed
+        test_size = 0.01  # Adjust as needed
 
         team_stats_train, team_stats_test, opp_stats_train, opp_stats_test, \
         team_scores_train, team_scores_test, opp_scores_train, opp_scores_test, \
