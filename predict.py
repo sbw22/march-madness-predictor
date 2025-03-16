@@ -30,6 +30,7 @@ if __name__ == "__main__":
     import os
     import json
     import joblib
+    import math
     # import nbimporter
     
     
@@ -98,7 +99,7 @@ if __name__ == "__main__":
 
 
     
-    def predict(point_scaler, model, test_team_stats, test_opp_stats, test_team_names, test_opp_names, test_years=[], test_team_scores=[], test_opp_scores=[]):
+    def predict(point_scaler, model, test_team_stats, test_opp_stats, test_team_names, test_opp_names, test_years=[], return_early=False, test_team_scores=[], test_opp_scores=[]):
         
         scores_len = -1
         if type(test_team_scores) != int:
@@ -106,7 +107,6 @@ if __name__ == "__main__":
 
         predictions_1 = model.predict([test_team_stats, test_opp_stats], batch_size=1, verbose=0)
         predictions_2 = model.predict([test_opp_stats, test_team_stats], batch_size=1, verbose=0)
-        # Add a predictions 2 here that switches the sports of test_team_stats and team_opp_stats to make sure the model isn't biasing the first team
 
         total_guesses = len(test_opp_names)
         true_guesses = 0
@@ -218,51 +218,63 @@ if __name__ == "__main__":
                 true_guesses = true_guesses+1 if true_win == guess_win else true_guesses
             
 
-
+            if return_early == True:  # If we want to return the score (for the bracket, for example), return_early equals True
+                if guess_1 > guess_2:
+                    return [team_name, guess_1, opp_name, guess_2]
+                return [opp_name, guess_2, team_name, guess_1]
             
 
             print(f"{team_name} vs {opp_name} in {year}\n")
 
             
-            
             print(f"guess: ({team_name}) {guess_1} to {guess_2} ({opp_name})\n")
             if score1 > 0: # Only print score if real score to game was provided
                 print(f"actual score: ({team_name}) {score1} to {score2} ({opp_name})\n\n")
+
+
 
         if scores_len > 0:   # Only calculate correct pick percentage if real scores are provided to us
             print(f"total_guesses = {total_guesses}")
             correct_pick_perc = (true_guesses/total_guesses)*100
             print(f"correct pick percentage: {correct_pick_perc}%")
 
+        # Return guessed score with winner being the first team in the score
+
 
 
 
     
-    def single_game(point_scaler, scaler_dict, model):
+    def single_game(point_scaler, scaler_dict, model, team_1="", team_2="", return_early=False):
 
         # point_scaler, model, test_team_stats, test_opp_stats, test_team_scores, test_opp_scores, test_years, test_team_names, test_opp_names
         
-        file_path = f"data/regular_season_data/regular_season_(4-3-25).csv"
+        file_path = f"data/regular_season_data/regular_season_(3-14-25).csv"
 
         while(True):
-            print(f"Teams may have a different spelling than how you spell it. You may have to pick a different name for the team you are referring to.")
-            print(f"To exit, enter 'q'.")
-            team_name = input("\nEnter team 1: ").strip()
+            if team_1 == "":
+                print(f"Teams may have a different spelling than how you spell it. You may have to pick a different name for the team you are referring to.")
+                print(f"To exit, enter 'q'.")
 
-            if team_name == 'q':
-                return
-            
-            opp_name = input("\nEnter team 2: ").strip()
+                team_name = input("\nEnter team 1: ").strip()
 
-            if opp_name == 'q':
-                return
-            
-            game_year = input("\nEnter year of the game: ").strip()
+                if team_name == 'q':
+                    return
 
-            if game_year == 'q':
-                return
-            
-            print("")
+                opp_name = input("\nEnter team 2: ").strip()
+
+                if opp_name == 'q':
+                    return
+
+                game_year = input("\nEnter year of the game: ").strip()
+
+                if game_year == 'q':
+                    return
+
+                print("")
+            else: 
+                team_name = team_1
+                opp_name = team_2
+                game_year = "2025"
 
             team_info_list = []
             opp_info_list = []
@@ -274,7 +286,7 @@ if __name__ == "__main__":
                 
                     season_data = csv.reader(season_file, delimiter=',')    # assigns csv to a variable
                     next(season_data)  # Skips the headers
-                    next(season_data)
+                    # next(season_data)  # Skips the second header. SOME TABLES USED HERE HAVE TWO HEADERS, AND SOME ONLY HAVE ONE. MAKE SURE YOU INCLUDE THIS NEXT ACCORDINGLY.
 
 
                     for _team in season_data:
@@ -292,14 +304,6 @@ if __name__ == "__main__":
                             # above list cotains all data points from regular season
 
             
-            def tourney_func():
-
-                # Get all teams in the tournament
-                # Get all the correct matchups
-                # Format the games in a way that winners play winners
-
-
-                print(f"hello")
                         
                             
             if team_info_list == []:
@@ -347,8 +351,14 @@ if __name__ == "__main__":
             stacked_opp_stats = stacked_opp_stats[:, :, np.newaxis]   # Adds a third dimension
 
 
-            predict(point_scaler, model, stacked_team_stats, stacked_opp_stats, [team_name], [opp_name], [game_year], test_team_scores=0, test_opp_scores=0)
 
+            if return_early == True:  # returns the predicted game score if return_early is true. Else, just call predict
+                return predict(point_scaler, model, stacked_team_stats, stacked_opp_stats, [team_name], [opp_name], [game_year], return_early=True, test_team_scores=0, test_opp_scores=0)
+            else:
+                predict(point_scaler, model, stacked_team_stats, stacked_opp_stats, [team_name], [opp_name], [game_year], return_early=False, test_team_scores=0, test_opp_scores=0)
+
+
+            
             # need to get all the stats in the right format
             
 
@@ -361,7 +371,68 @@ if __name__ == "__main__":
             # Find stats for team and opp
 
 
-            
+    def tourney_func(point_scaler, scaler_dict, model):
+
+                # Get all teams in the tournament
+                # Get all the correct matchups
+                # Format the games in a way that winners play winners
+
+                list_of_teams = ["Kansas", "Duke", "Michigan State", "North Carolina"]
+                list_len = len(list_of_teams)
+
+                bracket = dict()
+                num_of_rounds = int(math.log(list_len, 2)) # finds the number of rounds in a tournament (must be a factor of 2)
+                num_of_teams = len(list_of_teams)
+
+                round_str = f"round_{1}"                                                
+                bracket[round_str] = dict()
+
+                j = 0
+
+
+
+                for i in range(1, num_of_rounds+1): # loops through each round of the tournament
+
+                    # Get teams in list in bracket 
+
+                    round_str = f"round_{i}"                                                
+                    bracket[round_str] = dict()
+                    round = bracket[round_str]
+
+                    print(f"###################### ROUND {i} ######################\n")
+
+                    for k in range(0, num_of_teams, 2): # loop through teams in list_of_teams to predict their games' score
+                        game_str = f"game_{j}"
+                        j += 1
+                        team_1 = list_of_teams[k]
+                        team_2 = list_of_teams[k+1]
+
+                        return_true = True
+
+
+                        result = single_game(point_scaler, scaler_dict, model, team_1, team_2, return_true)
+
+
+                        round[game_str] = result
+                    
+                    list_of_teams = [] # resets the list of teams so that only the winners are on the list_of_teams list
+
+
+                    for game in round: # prints all the games in the round
+                        result = round[game]
+                        winner = result[0]
+                        winner_score = result[1]
+                        loser = result[2]
+                        loser_score = result[3]
+                        list_of_teams.append(winner) # appends winners to the new list of teams
+                        print(f"{game}: {winner}: {winner_score}, {loser}: {loser_score}\n")
+                    
+                    num_of_teams = len(list_of_teams) # Finds the number of teams in the next round
+
+
+                    
+
+
 
     
     
@@ -403,7 +474,8 @@ if __name__ == "__main__":
         print(f"team_stats len = {len(team_stats)}")
 
 
-        test_size = 0.01  # Adjust as needed
+
+        test_size = 0.108  # Adjust as needed
 
         team_stats_train, team_stats_test, opp_stats_train, opp_stats_test, \
         team_scores_train, team_scores_test, opp_scores_train, opp_scores_test, \
@@ -425,7 +497,8 @@ if __name__ == "__main__":
             print(f"\n********************* COLLEGE BASKETBALL AI PREDICTOR *********************\n") 
             print(f"(1) Predict An Individual Game")
             print(f"(2) Find Prediction Percentage of Random Games")
-            print(f"(3) Quit")
+            print(f"(3) Run a bracket simulation")
+            print(f"(4) Quit")
             user_input = int(input(f"\nEnter a NUMBER choice: ").strip())
 
             if user_input == 1:
@@ -433,12 +506,19 @@ if __name__ == "__main__":
                 single_game(point_scaler, scaler_dict, model)
             elif user_input == 2:
                 print(f"\n********************** Random Game Predictor *******************************\n")
-                predict(point_scaler, model, team_stats_test, opp_stats_test, team_names_test, opp_names_test, years_test, team_scores_test, opp_scores_test)
+                return_early = False # Don't return the guessed score early
+                predict(point_scaler, model, team_stats_test, opp_stats_test, team_names_test, opp_names_test, years_test, return_early, team_scores_test, opp_scores_test)
             elif user_input == 3:
+                print(f"\n************************ Bracket Simulator *********************************\n")
+                tourney_func(point_scaler, scaler_dict, model)
+            elif user_input == 4:
                 print(f"GOODBYE!")
                 return
             else:
                 print(f"\nDid not recognize the input. Make sure the input is a single number.")
+
+            
+
 
         
             # i += 1
