@@ -307,7 +307,7 @@ if __name__ == "__main__":
                         
                             
             if team_info_list == []:
-                print(f"team 1 has not been found. Year might be wrong, or team name might need to be spelled a different way.")
+                print(f"team 1 ({team_1}) has not been found. Year might be wrong, or team name might need to be spelled a different way.")
 
                 exit = input(f"\nExit single game prediction? (y/n) ")
 
@@ -316,7 +316,7 @@ if __name__ == "__main__":
                 
                 continue
             if opp_info_list == []:
-                print(f"team 2 has not been found. Year might be wrong, or team name might need to be spelled a different way.")
+                print(f"team 2 ({team_2}) has not been found. Year might be wrong, or team name might need to be spelled a different way.")
 
                 exit = input(f"\nExit single game prediction? (y/n) ")
 
@@ -363,7 +363,7 @@ if __name__ == "__main__":
             
 
             
-      
+            
 
 
             
@@ -377,7 +377,8 @@ if __name__ == "__main__":
                 # Get all the correct matchups
                 # Format the games in a way that winners play winners
 
-                list_of_teams = ["Kansas", "Duke", "Michigan State", "North Carolina"]
+                list_of_teams = ["Auburn", "Alabama State", "Louisville", "Creighton", "Michigan", "UC San Diego", "Texas A&M", "Yale", "Ole Miss", "San Diego State", "Iowa State", "Lipscomb", "Marquette", "New Mexico", "Michigan State", "Bryant", "Duke", "American University", "Mississippi State", "Baylor", "Oregon", "Liberty", "Arizona", "Akron", "BYU", "VCU", "Wisconsin", "Montana", "Saint Mary's", "Vanderbilt", "Alabama", "Robert Morris", "Houston", "SIU Edwardsville", "Gonzaga", "Georgia", "Clemson", "McNeese", "Purdue", "High Point", "Illinois", "Texas", "Kentucky", "Troy", "UCLA", "Utah State", "Tennessee", "Wofford", "Florida", "Norfolk State", "UConn", "Oklahoma", "Memphis", "Colorado State", "Maryland", "Grand Canyon", "Missouri", "Drake", "Texas Tech", "UNC Wilmington", "Kansas", "Arkansas", "St. John's", "Omaha"] # Make sure you narrow down the first 4 teams
+                print(f"list_of_teams len = {len(list_of_teams)}")
                 list_len = len(list_of_teams)
 
                 bracket = dict()

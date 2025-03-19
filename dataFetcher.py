@@ -138,7 +138,7 @@ if __name__ == "__main__":
                 #print(f"team_dict = {team_dict}")
 
         
-                file_path = f"data/regular_season_data/regular_season_(3-14-25).csv"
+                file_path = f"data/regular_season_data/regular_season_(3-18-25).csv"
 
                 with open(file_path, 'r') as season_file:
                 
