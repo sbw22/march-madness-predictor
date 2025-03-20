@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Basketball AI Predictor</title>
+</head>
+<body>
+    <h1>College Basketball AI Predictor</h1>
+    <form method="POST">
+        <label>Team 1:</label>
+        <input type="text" name="team" required>
+        <br>
+        <label>Team 2:</label>
+        <input type="text" name="opp" required>
+        <br>
+        <label>Year:</label>
+        <input type="text" name="year" required>
+        <br>
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if result %}
+    <h2>Prediction:</h2>
+    <p>{{ result['year'] }} - {{ result['team'] }}: {{ result['team_score'] }} vs {{ result['opp'] }}: {{ result['opp_score'] }}</p>
+    {% endif %}
+</body>
+</html>
