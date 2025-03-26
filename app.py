@@ -1,26 +1,25 @@
-import sys
-import io
-from flask import Flask, render_template_string
-import predictor
+from flask import Flask, Response
+import time
+import subprocess
 
 app = Flask(__name__)
 
-@app.route('/')
+# generator function to stream terminal output
+def generate_output():
+    # process output from predictor
+    process = subprocess.Popen(['python3', 'predictor.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+    
+    # read and yield output line by line
+    for line in iter(process.stdout.readline, b''):
+        yield line.decode('utf-8') + '<br>'
+    
+    # capture any errors
+    for line in iter(process.stderr.readline, b''):
+        yield f'<b>Error:</b> {line.decode("utf-8")}<br>'
+
+@app.route('/') # boot flask
 def index():
-    sys.stdout = io.StringIO()  # capture terminal output
-    predictor.main()  # use the module name directly
-    output = sys.stdout.getvalue()
-    sys.stdout = sys.__stdout__  # reset stdout
-
-    return render_template_string("""
-    <html>
-        <head><title>Basketball AI Output</title></head>
-        <body>
-            <h1>Basketball AI Predictions</h1>
-            <pre>{{ output }}</pre>
-        </body>
-    </html>
-    """, output=output)
-
-if __name__ == "__main__":
+    return Response(generate_output(), mimetype='text/html') # use mimetext to convert to HTML
+# run main function from predictor
+if __name__ == '__main__':
     app.run(debug=True)
